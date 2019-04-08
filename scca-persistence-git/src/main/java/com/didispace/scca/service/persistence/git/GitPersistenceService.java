@@ -129,7 +129,11 @@ public class GitPersistenceService implements PersistenceService {
             CmdRunner.execute("git clone " + projectInfo.getProjectUrl() + " " + projectInfo.getDir());
 
             // git checkout branch(label)
-            CmdRunner.execute("git checkout " + label, new File(projectInfo.getDir()));
+            File file = new File(projectInfo.getDir());
+            if (!file.exists()) {
+                file.mkdirs();
+            }
+            CmdRunner.execute("git checkout " + label , file);
 
             // read propertiesFile before upddate, write properties, read propertiesFile after update
             log.debug("---------------- properties before update ----------------");
@@ -186,9 +190,9 @@ public class GitPersistenceService implements PersistenceService {
                     .replaceFirst("\\{profile\\}", profile);
 
             // 生成本地拉取配置用来修改使用的唯一目录名
-            this.dir = UUID.randomUUID().toString();
+            this.dir = gitProperties.getBasePath() + "/" + UUID.randomUUID().toString();
             // 获取要修改文件的相对路径
-            this.path = this.dir + gitProperties.getBasePath() + "/" + propertiesFile;
+            this.path = this.dir +  "/" + application + "/" + propertiesFile;
             log.debug("update file : " + this.path);
 
             // projectUrl append username & password， git clone projectUrl
